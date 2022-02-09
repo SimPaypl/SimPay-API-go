@@ -1,4 +1,4 @@
-# SimPay-API-golang
+# SimPay-API-go
 Oficjalny klient do wszystkich API SimPay
 
 # Dokumentacja
