@@ -206,7 +206,7 @@ type CalculateCommissionResponse struct {
 type DirectBillingTransactionListResponse struct {
 	PaginatedResponse
 	TransactionList []struct {
-		Id         int     `json:"id"`
+		Id         string  `json:"id"`
 		Status     string  `json:"status"`
 		Value      float64 `json:"value"`
 		ValueNetto float64 `json:"value_netto"`
@@ -219,7 +219,7 @@ type DirectBillingTransactionListResponse struct {
 type DirectBillingTransactionDetailsResponse struct {
 	Response
 	TransactionDetails struct {
-		Id          int         `json:"id"`
+		Id          string      `json:"id"`
 		Status      string      `json:"status"`
 		PhoneNumber interface{} `json:"phoneNumber"`
 		Control     string      `json:"control"`
@@ -267,7 +267,7 @@ type DirectBillingGenerateTransactionResponse struct {
 }
 
 type DirectBillingTransactionNotification struct {
-	Id        int    `json:"id"`
+	Id        string `json:"id"`
 	ServiceId int    `json:"service_id"`
 	Status    string `json:"status"`
 	Values    struct {
@@ -279,8 +279,8 @@ type DirectBillingTransactionNotification struct {
 		Complete string `json:"complete"`
 		Failure  string `json:"failure"`
 	} `json:"returns"`
-	Control   string `json:"control"`
-	Number    string `json:"number"`
-	Provider  int    `json:"provider"`
-	Signature string `json:"Signature"`
+	Control    string `json:"control"`
+	NumberFrom string `json:"number_from"`
+	Provider   int    `json:"provider"`
+	Signature  string `json:"Signature"`
 }

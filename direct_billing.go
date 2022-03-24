@@ -54,7 +54,7 @@ func (d DirectBilling) GetTransactionList(serviceId, page, limit uint) (DirectBi
 	var transactionList DirectBillingTransactionListResponse
 	return transactionList, json.Unmarshal(response, &transactionList)
 }
-func (d DirectBilling) GetTransactionDetails(serviceId, transactionId uint) (DirectBillingTransactionDetailsResponse, error) {
+func (d DirectBilling) GetTransactionDetails(serviceId uint, transactionId string) (DirectBillingTransactionDetailsResponse, error) {
 	endpoint := fmt.Sprintf("/directbilling/%v/transactions/%v", serviceId, transactionId)
 	response, err := d.restClient.sendGetRequest(endpoint)
 	if err != nil {
@@ -88,7 +88,7 @@ func CheckSignature(key, transactionJson string) bool {
 		fmt.Sprintf("%f", n.Values.Partner),
 		n.Returns.Complete,
 		n.Returns.Failure,
-		n.Number,
+		n.NumberFrom,
 		fmt.Sprintf("%v", n.Provider),
 		n.Signature,
 		key,
