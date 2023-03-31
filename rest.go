@@ -10,6 +10,8 @@ import (
 const (
 	SimKeyHeader      = "X-SIM-KEY"
 	SimPasswordHeader = "X-SIM-PASSWORD"
+	SimVersionHeader  = "X-SIM-VERSION"
+	SimPlatformHeader = "X-SIM-PLATFORM"
 	BaseUrl           = "https://api.simpay.pl"
 	ContentType       = "application/json"
 )
@@ -61,5 +63,7 @@ type interceptor struct {
 func (i interceptor) RoundTrip(r *http.Request) (*http.Response, error) {
 	r.Header.Set(SimKeyHeader, i.apikey)
 	r.Header.Set(SimPasswordHeader, i.simKey)
+	r.Header.Set(SimVersionHeader, "2.1.1")
+	r.Header.Set(SimPlatformHeader, "GO")
 	return i.core.RoundTrip(r)
 }
