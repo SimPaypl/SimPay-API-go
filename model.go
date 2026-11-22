@@ -14,6 +14,9 @@ type Time struct {
 }
 
 func (t *Time) UnmarshalJSON(b []byte) error {
+	if string(b) == "null" {
+		return nil
+	}
 	s := strings.Trim(string(b), "\"")
 	var err error
 	t.Time, err = time.Parse(dateTimeFormat, s)
@@ -47,7 +50,7 @@ type PaginatedResponse struct {
 type SmsServiceListResponse struct {
 	PaginatedResponse
 	ServiceList []struct {
-		Id        int    `json:"id"`
+		Id        string `json:"id"`
 		Type      string `json:"type"`
 		Status    string `json:"status"`
 		Name      string `json:"name"`
@@ -61,7 +64,7 @@ type SmsServiceListResponse struct {
 type SmsServiceDetailsResponse struct {
 	Response
 	ServiceDetails struct {
-		Id          int      `json:"id"`
+		Id          string   `json:"id"`
 		Type        string   `json:"type"`
 		Status      string   `json:"status"`
 		Name        string   `json:"name"`
@@ -121,8 +124,8 @@ type NumberListResponse struct {
 }
 
 type CodeVerifyRequest struct {
-	Code   string
-	Number int64
+	Code   string `json:"code"`
+	Number int64  `json:"number,omitempty"`
 }
 
 type CodeVerificationResponse struct {
@@ -141,7 +144,7 @@ type CodeVerificationResponse struct {
 type DirectBillingServiceListResponse struct {
 	PaginatedResponse
 	ServiceList []struct {
-		Id        int    `json:"id"`
+		Id        string `json:"id"`
 		Name      string `json:"name"`
 		Suffix    string `json:"suffix"`
 		Status    string `json:"status"`
@@ -158,7 +161,7 @@ type CommissionPercent struct {
 type DirectBillingServiceDetailsResponse struct {
 	Response
 	ServiceDetails struct {
-		Id     int    `json:"id"`
+		Id     string `json:"id"`
 		Name   string `json:"name"`
 		Suffix string `json:"suffix"`
 		Status string `json:"status"`
@@ -209,7 +212,7 @@ type DirectBillingTransactionListResponse struct {
 		Id         string  `json:"id"`
 		Status     string  `json:"status"`
 		Value      float64 `json:"value"`
-		ValueNetto float64 `json:"value_netto"`
+		ValueNetto float64 `json:"value_net"`
 		Operator   string  `json:"operator"`
 		CreatedAt  Time    `json:"created_at"`
 		UpdatedAt  Time    `json:"updated_at"`
@@ -224,7 +227,7 @@ type DirectBillingTransactionDetailsResponse struct {
 		PhoneNumber interface{} `json:"phoneNumber"`
 		Control     string      `json:"control"`
 		Value       float64     `json:"value"`
-		ValueNetto  float64     `json:"value_netto"`
+		ValueNetto  float64     `json:"value_net"`
 		Operator    string      `json:"operator"`
 		Notify      struct {
 			IsSend     bool `json:"is_send"`
