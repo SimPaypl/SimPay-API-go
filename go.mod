@@ -1,3 +1,3 @@
-module github.com/SimPaypl
+module github.com/SimPaypl/SimPay-API-go
 
 go 1.16
