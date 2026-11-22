@@ -34,7 +34,7 @@ func fakeClient(body string) (restClient, *fakeTransport) {
 	return restClient{http.Client{Transport: interceptor{apikey: "key", simKey: "password", core: transport}}}, transport
 }
 
-// Response bodies below follow the resources and controllers in simpay-api.
+// Response bodies below follow the shape of real SimPay API responses.
 
 func TestVerifyCodeSendsLowercaseFields(t *testing.T) {
 	client, transport := fakeClient(`{"success":true,"data":{"used":false,"code":"ABC123","test":false,"from":"48123456789","number":7136,"value":0.5}}`)
