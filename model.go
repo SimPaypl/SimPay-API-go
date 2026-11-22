@@ -3,6 +3,7 @@ package simpay
 import (
 	"crypto"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -25,6 +26,23 @@ func (t *Time) UnmarshalJSON(b []byte) error {
 
 func (t Time) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + t.Format(dateTimeFormat) + `"`), nil
+}
+
+// Decimal is a float64 that also accepts a JSON string holding a number.
+// The API sends some amounts, such as SMS number values, as "0.50".
+type Decimal float64
+
+func (d *Decimal) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), "\"")
+	if s == "null" || s == "" {
+		return nil
+	}
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return err
+	}
+	*d = Decimal(f)
+	return nil
 }
 
 type Response struct {
@@ -96,14 +114,14 @@ type SmsTransactionDetailsResponse struct {
 		Code       string  `json:"code"`
 		Used       bool    `json:"used"`
 		SendNumber int     `json:"send_number"`
-		Value      float64 `json:"value"`
+		Value      Decimal `json:"value"`
 		SendAt     Time    `json:"send_at"`
 	} `json:"data"`
 }
 
 type NumberDetails struct {
 	Number     int     `json:"number"`
-	Value      float64 `json:"value"`
+	Value      Decimal `json:"value"`
 	ValueGross float64 `json:"value_gross"`
 	Adult      bool    `json:"adult"`
 }
@@ -136,7 +154,7 @@ type CodeVerificationResponse struct {
 		Test   bool    `json:"test"`
 		From   string  `json:"from"`
 		Number int     `json:"number"`
-		Value  float64 `json:"value"`
+		Value  Decimal `json:"value"`
 		UsedAt Time    `json:"used_at"`
 	} `json:"data"`
 }

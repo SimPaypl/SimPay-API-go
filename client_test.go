@@ -37,7 +37,7 @@ func fakeClient(body string) (restClient, *fakeTransport) {
 // Response bodies below follow the shape of real SimPay API responses.
 
 func TestVerifyCodeSendsLowercaseFields(t *testing.T) {
-	client, transport := fakeClient(`{"success":true,"data":{"used":false,"code":"ABC123","test":false,"from":"48123456789","number":7136,"value":0.5}}`)
+	client, transport := fakeClient(`{"success":true,"data":{"used":false,"code":"ABC123","test":false,"from":"48123456789","number":7136,"value":"0.50"}}`)
 	sms := Sms{restClient: client}
 
 	response, err := sms.VerifyCode(1, "ABC123", 7136)
@@ -52,8 +52,21 @@ func TestVerifyCodeSendsLowercaseFields(t *testing.T) {
 	if sent["code"] != "ABC123" || sent["number"] != float64(7136) {
 		t.Errorf("request body = %s, want code and number in lowercase", transport.lastBody)
 	}
-	if !response.Success || response.CodeVerification.From != "48123456789" || response.CodeVerification.Number != 7136 {
+	if !response.Success || response.CodeVerification.From != "48123456789" || response.CodeVerification.Number != 7136 || response.CodeVerification.Value != 0.5 {
 		t.Errorf("unexpected response %+v", response)
+	}
+}
+
+func TestNumberListReadsDecimalStringValues(t *testing.T) {
+	client, _ := fakeClient(`{"success":true,"data":[{"number":7055,"value":"0.50","value_gross":0.62,"adult":false},{"number":7255,"value":2,"value_gross":2.46,"adult":false}],"pagination":{"total":2,"count":2,"per_page":15,"current_page":1,"total_pages":1,"links":{"next_page":null,"prev_page":null}}}`)
+	sms := Sms{restClient: client}
+
+	response, err := sms.GetNumbers(1, 15)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(response.NumberList) != 2 || response.NumberList[0].Value != 0.5 || response.NumberList[1].Value != 2 {
+		t.Errorf("unexpected numbers %+v", response.NumberList)
 	}
 }
 
