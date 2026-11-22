@@ -1,7 +1,9 @@
 package simpay
 
 import (
-	"crypto"
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -73,26 +75,53 @@ func (d DirectBilling) GenerateTransaction(serviceId uint, request GenerateTrans
 	return transactionResponse, json.Unmarshal(response, &transactionResponse)
 }
 
+// CheckSignature reports whether transactionJson, the body of a direct billing
+// notification, carries a valid signature for key.
+//
+// SimPay signs the values of id, service_id, status, values.net, values.gross,
+// values.partner, returns.complete, returns.failure, control, number_from and
+// provider, in that order, skipping fields that are absent, followed by key,
+// joined with "|" and hashed with SHA-256. Numbers are taken exactly as they
+// appear in the JSON body.
 func CheckSignature(key, transactionJson string) bool {
-	var n DirectBillingTransactionNotification
-	err := json.Unmarshal([]byte(transactionJson), &n)
-	if err != nil {
+	decoder := json.NewDecoder(strings.NewReader(transactionJson))
+	decoder.UseNumber()
+
+	var n map[string]interface{}
+	if err := decoder.Decode(&n); err != nil {
 		return false
 	}
 
-	fields := []string{
-		fmt.Sprintf("%v", n.Id),
-		n.Status,
-		fmt.Sprintf("%f", n.Values.Net),
-		fmt.Sprintf("%f", n.Values.Gross),
-		fmt.Sprintf("%f", n.Values.Partner),
-		n.Returns.Complete,
-		n.Returns.Failure,
-		n.NumberFrom,
-		fmt.Sprintf("%v", n.Provider),
-		n.Signature,
-		key,
+	signature, ok := n["signature"].(string)
+	if !ok || signature == "" {
+		return false
 	}
-	return string(crypto.SHA256.New().Sum([]byte(strings.Join(fields, "|")))) == n.Signature
 
+	values, _ := n["values"].(map[string]interface{})
+	returns, _ := n["returns"].(map[string]interface{})
+
+	var fields []string
+	for _, value := range []interface{}{
+		n["id"],
+		n["service_id"],
+		n["status"],
+		values["net"],
+		values["gross"],
+		values["partner"],
+		returns["complete"],
+		returns["failure"],
+		n["control"],
+		n["number_from"],
+		n["provider"],
+	} {
+		if value != nil {
+			fields = append(fields, fmt.Sprint(value))
+		}
+	}
+	fields = append(fields, key)
+
+	sum := sha256.Sum256([]byte(strings.Join(fields, "|")))
+	expected := hex.EncodeToString(sum[:])
+
+	return subtle.ConstantTimeCompare([]byte(expected), []byte(strings.ToLower(signature))) == 1
 }
